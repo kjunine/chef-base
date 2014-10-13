@@ -24,13 +24,20 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+user_id = node['base']['user']
+
+execute "apt-get-upgrade" do
+  user user_id
+  group user_id
+  command "sudo apt-get upgrade -y; sudo apt-get autoremove -y"
+  not_if "test -f /home/#{user_id}/.base_initialized"
+end
+
 %w{git curl wget zsh vim tmux tree htop iftop}.each do |pkg|
   package pkg do
     action :upgrade
   end
 end
-
-user_id = node['base']['user']
 
 git "/home/#{user_id}/.oh-my-zsh" do
   repository "https://github.com/robbyrussell/oh-my-zsh.git"
@@ -51,5 +58,12 @@ end
 
 execute "set-zsh" do
   command "chsh -s $(which zsh) #{user_id}"
-  not_if "[[ `getent passwd #{user_id} | cut -d: -f7` == */zsh ]]"
+  not_if "test -f /home/#{user_id}/.base_initialized"
+end
+
+execute "mark-as-initialized" do
+  user user_id
+  group user_id
+  command "touch /home/#{user_id}/.base_initialized"
+  not_if "test -f /home/#{user_id}/.base_initialized"
 end
