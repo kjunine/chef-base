@@ -1,6 +1,6 @@
 #
 # Cookbook Name:: base
-# Recipe:: default
+# Recipe:: upgrade
 #
 # Copyright (C) 2014 Daniel Ku
 #
@@ -24,44 +24,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-user_id = node['base']['user']
-
 execute "apt-get-upgrade" do
   command "apt-get update; apt-get upgrade -y; apt-get autoremove -y"
-  not_if "test -f /home/#{user_id}/.base_initialized"
-end
-
-%w{git curl wget zsh vim tmux tree htop iftop}.each do |pkg|
-  package pkg do
-    action :upgrade
-  end
-end
-
-git "/home/#{user_id}/.oh-my-zsh" do
-  repository "https://github.com/robbyrussell/oh-my-zsh.git"
-  reference "master"
-  user user_id
-  group user_id
-  action :checkout
-  not_if "test -d /home/#{user_id}/.oh-my-zsh"
-end
-
-cookbook_file "/home/#{user_id}/.zshrc" do
-  source "zshrc"
-  mode 00644
-  owner user_id
-  group user_id
-  action :create_if_missing
-end
-
-execute "set-zsh" do
-  command "chsh -s $(which zsh) #{user_id}"
-  not_if "test -f /home/#{user_id}/.base_initialized"
-end
-
-execute "mark-as-initialized" do
-  user user_id
-  group user_id
-  command "touch /home/#{user_id}/.base_initialized"
-  not_if "test -f /home/#{user_id}/.base_initialized"
 end
