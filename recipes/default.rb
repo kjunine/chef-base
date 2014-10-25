@@ -59,6 +59,14 @@ execute "set-zsh" do
   not_if "test -f /home/#{user_id}/.base_initialized"
 end
 
+cookbook_file "/home/#{user_id}/.gitconfig" do
+  source "gitconfig"
+  mode 00644
+  owner user_id
+  group user_id
+  action :create_if_missing
+end
+
 group "docker" do
   members [user_id]
   action :create
