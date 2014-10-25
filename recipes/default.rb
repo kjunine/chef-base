@@ -59,6 +59,11 @@ execute "set-zsh" do
   not_if "test -f /home/#{user_id}/.base_initialized"
 end
 
+group "docker" do
+  members [user_id]
+  action :create
+end
+
 execute "mark-as-initialized" do
   user user_id
   group user_id
